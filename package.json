@@ -1,0 +1,27 @@
+{
+  "name": "q-dockerode",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js",
+    "test": "grunt"
+  },
+  "dependencies": {
+    "dockerode": "~1.2.7",
+    "q": "~1.0.0",
+  },
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/stanley-gu/q-dockerode.git"
+  },
+  "author": "Stanley Gu <stanleygu@gmail.com>",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/stanley-gu/q-dockerode/issues"
+  },
+  "directories": {
+    "test": "test"
+  }
+}
