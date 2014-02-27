@@ -5,7 +5,7 @@ var docker = new Docker({
   socketPath: '/var/run/docker.sock'
 });
 
-exports.containers = {};
+var containers = {};
 
 exports.addPortmap = function(container, portMap) {
   container.portMap = {};
@@ -22,6 +22,7 @@ exports.makeContainer = function(image) {
     if (err) {
       deferred.reject(err);
     } else {
+      containers[container.id] = container;
       deferred.resolve(container);
     }
   });
@@ -61,22 +62,46 @@ exports.closeContainer = function(container) {
     if (err) {
       deferred.reject(err);
     } else {
+      deferred.resolve(container);
+    }
+  });
+  return deferred.promise;
+};
+
+exports.removeContainer = function(container) {
+  var deferred = Q.defer();
+  container.remove(function(err) {
+    if (err) {
+      deferred.reject(err);
+    } else {
       deferred.resolve();
     }
   });
   return deferred.promise;
 };
 
-process.on('SIGINT', function() {
-  console.log('Received Exit Signal');
-  var ids = Object.keys(exports.containers);
+exports.removeAllContainers = function() {
+  var ids = Object.keys(containers);
   var closePromises = [];
   ids.forEach(function(id) {
     if (id) {
-      closePromises.push(exports.closeContainer(exports.containers[id]));
+      closePromises.push(exports.closeContainer(containers[id]).then(
+        function(container) {
+          return exports.removeContainer(container);
+        }));
     }
   });
-  Q.all(closePromises).done(function() {
-    process.exit(1);
+  return closePromises;
+};
+
+exports.closeContainersOnExit = function() {
+  process.on('SIGINT', function() {
+    console.log('Received Exit Signal');
+    var closePromises = exports.removeAllContainers();
+    Q.all(closePromises).then(function() {
+      process.exit(1);
+    });
   });
-});
+};
+
+exports.containers = containers;
